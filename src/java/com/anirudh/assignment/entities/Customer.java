@@ -26,6 +26,18 @@ public class Customer {
         this.phone = phone;
     }
 
+    public Customer(String firstName, String lastName, String street, String address, String city, String state, String email, String phone) {
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.street = street;
+        this.address = address;
+        this.city = city;
+        this.state = state;
+        this.email = email;
+        this.phone = phone;
+    }
+
+    
     public String getUuid() {
         return uuid;
     }

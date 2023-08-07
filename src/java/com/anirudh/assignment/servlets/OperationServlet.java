@@ -1,5 +1,8 @@
 package com.anirudh.assignment.servlets;
 
+import com.anirudh.assignment.dao.CustomerDao;
+import com.anirudh.assignment.entities.Customer;
+import com.anirudh.assignment.helper.ConnectionProvider;
 import com.anirudh.assignment.helper.Message;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
@@ -58,27 +61,37 @@ public class OperationServlet extends HttpServlet {
             String email = request.getParameter("email");
             String phone = request.getParameter("phone");
 
-            var customer = "{ 'first_name' : '" + fname + "', 'last_name' : '" + lname + "', 'street' : '" + street + "', 'address' : '" + address + "', 'city' : '" + city + "', 'state' : '" + state + "', 'email' : '" + email + "', 'phone' : '" + phone + "' }";
-
-            try {
-
-                var url = "https://qa2.sunbasedata.com/sunbase/portal/api/assignment.jsp?cmd=create";
-                var req = HttpRequest.newBuilder().uri(URI.create(url)).POST(HttpRequest.BodyPublishers.ofString(customer)).header("Authorization", "Bearer " + token).header("Content-type", "application/json").build();
-                var client = HttpClient.newBuilder().build();
-                var resp = client.send(req, HttpResponse.BodyHandlers.ofPublisher());
-
-                if (resp.statusCode() == 201) {
-                    message = new Message("Successfully Created!", "success", "alert-success");
-                } else if (resp.statusCode() == 400) {
-                    message = new Message("First Name or Last Name is missing!", "error", "alert-danger");
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
+            CustomerDao cusDao = new CustomerDao(ConnectionProvider.getConnection());
+            Customer customer = new Customer(fname, lname, street, address, city, state, email, phone);
+            boolean flag = cusDao.saveCustomer(customer);
+            if (flag) {
+                message = new Message("Successfully Created!", "success", "alert-success");
+            } else {
+                message = new Message("Something went wrong!", "error", "alert-danger");
             }
+
+//            var customer = "{ 'first_name' : '" + fname + "', 'last_name' : '" + lname + "', 'street' : '" + street + "', 'address' : '" + address + "', 'city' : '" + city + "', 'state' : '" + state + "', 'email' : '" + email + "', 'phone' : '" + phone + "' }";
+//
+//            try {
+//
+//                var url = "https://qa2.sunbasedata.com/sunbase/portal/api/assignment.jsp?cmd=create";
+//                var req = HttpRequest.newBuilder().uri(URI.create(url)).POST(HttpRequest.BodyPublishers.ofString(customer)).header("Authorization", "Bearer " + token).header("Content-type", "application/json").build();
+//                var client = HttpClient.newBuilder().build();
+//                var resp = client.send(req, HttpResponse.BodyHandlers.ofPublisher());
+//
+//                if (resp.statusCode() == 201) {
+//                    message = new Message("Successfully Created!", "success", "alert-success");
+//                } else if (resp.statusCode() == 400) {
+//                    message = new Message("First Name or Last Name is missing!", "error", "alert-danger");
+//                }
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//            }
             session.setAttribute("message", message);
             response.sendRedirect("customer_list.jsp");
 
-        } else if (operation.equals("update")) {
+        } else if (operation.equals(
+                "update")) {
 
             String uuid = request.getParameter("uuid");
             String fname = request.getParameter("first_name");
@@ -116,7 +129,7 @@ public class OperationServlet extends HttpServlet {
             response.sendRedirect("customer_list.jsp");
         }
     }
- 
+
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
